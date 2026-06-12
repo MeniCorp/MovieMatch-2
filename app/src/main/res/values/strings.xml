@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MovieMatch 2</string>
+    <string name="empty_state">No movies available yet. Swipe to discover!</string>
+    <string name="menu_likes">Likes</string>
+    <string name="menu_settings">Settings</string>
 </resources>
