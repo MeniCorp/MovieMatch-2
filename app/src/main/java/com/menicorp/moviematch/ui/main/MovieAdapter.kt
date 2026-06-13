@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.cardview.widget.CardView
+import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.menicorp.moviematch.R
 import com.menicorp.moviematch.data.model.Movie
@@ -24,6 +25,8 @@ class MovieAdapter(
         val titleText: TextView = itemView.findViewById(R.id.titleText)
         val overviewText: TextView = itemView.findViewById(R.id.overviewText)
         val ratingBar: RatingBar = itemView.findViewById(R.id.ratingBar)
+        val likeIndicator: TextView = itemView.findViewById(R.id.likeIndicator)
+        val dislikeIndicator: TextView = itemView.findViewById(R.id.dislikeIndicator)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieViewHolder {
@@ -45,6 +48,8 @@ class MovieAdapter(
                 .placeholder(R.drawable.placeholder)
                 .into(holder.posterImage)
         }
+
+        resetSwipeIndicators(holder)
     }
 
     override fun getItemCount(): Int = movies.size
@@ -52,5 +57,45 @@ class MovieAdapter(
     fun updateMovies(newMovies: List<Movie>) {
         movies = newMovies
         notifyDataSetChanged()
+    }
+
+    fun getMovieAt(position: Int): Movie = movies[position]
+
+    fun removeMovieAt(position: Int): Movie {
+        val movie = movies[position]
+        movies = movies.toMutableList().also { it.removeAt(position) }
+        notifyItemRemoved(position)
+        return movie
+    }
+
+    fun showSwipeIndicators(holder: RecyclerView.ViewHolder, dX: Float) {
+        val vh = holder as MovieViewHolder
+        if (dX > 0) {
+            vh.likeIndicator.visibility = View.VISIBLE
+            vh.likeIndicator.alpha = minOf(1f, dX / 200f)
+            vh.dislikeIndicator.visibility = View.GONE
+        } else if (dX < 0) {
+            vh.dislikeIndicator.visibility = View.VISIBLE
+            vh.dislikeIndicator.alpha = minOf(1f, -dX / 200f)
+            vh.likeIndicator.visibility = View.GONE
+        }
+    }
+
+    fun resetSwipeIndicators(holder: RecyclerView.ViewHolder) {
+        val vh = holder as MovieViewHolder
+        vh.likeIndicator.visibility = View.GONE
+        vh.dislikeIndicator.visibility = View.GONE
+        vh.cardView.translationX = 0f
+    }
+
+    fun animateCardOffScreen(holder: RecyclerView.ViewHolder, dX: Float) {
+        val vh = holder as MovieViewHolder
+        val screenWidth = vh.cardView.resources.displayMetrics.widthPixels
+        val targetX = if (dX > 0) screenWidth.toFloat() else -screenWidth.toFloat()
+        ViewCompat.animate(vh.cardView)
+            .translationX(targetX)
+            .alpha(0f)
+            .setDuration(200)
+            .start()
     }
 }

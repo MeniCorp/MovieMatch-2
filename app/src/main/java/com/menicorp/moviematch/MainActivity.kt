@@ -2,6 +2,7 @@ package com.menicorp.moviematch
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.appbar.MaterialToolbar
@@ -33,8 +34,68 @@ class MainActivity : AppCompatActivity() {
         movieRecyclerView.layoutManager = LinearLayoutManager(this)
         movieRecyclerView.adapter = adapter
 
+        setupSwipeGestures()
+
         val bottomAppBar = findViewById<BottomAppBar>(R.id.bottomAppBar)
         bottomAppBar.replaceMenu(R.menu.main_menu)
+    }
+
+    private fun setupSwipeGestures() {
+        val swipeCallback = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                if (position == RecyclerView.NO_POSITION) return
+
+                val movie = adapter.getMovieAt(position)
+                adapter.animateCardOffScreen(viewHolder, if (direction == ItemTouchHelper.RIGHT) 1f else -1f)
+
+                if (direction == ItemTouchHelper.RIGHT) {
+                    onLike(movie)
+                } else {
+                    onDislike(movie)
+                }
+
+                adapter.removeMovieAt(position)
+                updateEmptyState()
+            }
+
+            override fun onChildDraw(
+                c: android.graphics.Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    viewHolder.itemView.findViewById<androidx.cardview.widget.CardView>(R.id.cardView)
+                        .translationX = dX
+                    adapter.showSwipeIndicators(viewHolder, dX)
+                }
+            }
+
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+                adapter.resetSwipeIndicators(viewHolder)
+            }
+        }
+
+        val itemTouchHelper = ItemTouchHelper(swipeCallback)
+        itemTouchHelper.attachToRecyclerView(movieRecyclerView)
+    }
+
+    private fun updateEmptyState() {
+        emptyStateText.visibility = if (adapter.itemCount == 0) View.VISIBLE else View.GONE
     }
 
     private fun getSampleMovies(): List<Movie> {
