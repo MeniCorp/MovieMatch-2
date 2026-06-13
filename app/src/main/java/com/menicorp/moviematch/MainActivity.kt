@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.appbar.MaterialToolbar
+import com.menicorp.moviematch.data.MovieRepository
 import com.menicorp.moviematch.data.model.Movie
 import com.menicorp.moviematch.ui.likes.LikesFragment
 import com.menicorp.moviematch.ui.suggestions.SuggestionsFragment
@@ -171,10 +172,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onLike(movie: Movie) {
-        // Handle like action - add to likes list
+        MovieRepository.addLike(movie)
     }
 
     private fun onDislike(movie: Movie) {
-        // Handle dislike action - add to dislikes list
+        MovieRepository.addDislike(movie)
     }
 }

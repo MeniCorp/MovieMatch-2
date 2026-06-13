@@ -47,6 +47,8 @@ class MovieAdapter(
                 .load(movie.posterUrl)
                 .placeholder(R.drawable.placeholder)
                 .into(holder.posterImage)
+        } else {
+            holder.posterImage.setImageResource(R.drawable.placeholder)
         }
 
         resetSwipeIndicators(holder)
