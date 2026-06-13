@@ -1,12 +1,15 @@
 package com.menicorp.moviematch
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.appbar.MaterialToolbar
 import com.menicorp.moviematch.data.model.Movie
+import com.menicorp.moviematch.ui.likes.LikesFragment
+import com.menicorp.moviematch.ui.suggestions.SuggestionsFragment
 import com.menicorp.moviematch.ui.main.MovieAdapter
 import com.menicorp.moviematch.R
 import android.widget.TextView
@@ -38,6 +41,40 @@ class MainActivity : AppCompatActivity() {
 
         val bottomAppBar = findViewById<BottomAppBar>(R.id.bottomAppBar)
         bottomAppBar.replaceMenu(R.menu.main_menu)
+        
+        bottomAppBar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_likes -> {
+                    showLikesScreen()
+                    true
+                }
+                R.id.action_suggestions -> {
+                    showSuggestionsScreen()
+                    true
+                }
+                R.id.action_settings -> {
+                    // Handle settings
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun showLikesScreen() {
+        val fragment = LikesFragment.newInstance()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.mainContentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun showSuggestionsScreen() {
+        val fragment = SuggestionsFragment.newInstance()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.mainContentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun setupSwipeGestures() {

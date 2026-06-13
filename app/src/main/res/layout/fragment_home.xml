@@ -13,19 +13,18 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:title="@string/app_name"
+            android:title="@string/title_home"
             app:titleTextColor="@color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout
-        android:id="@+id/mainContentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="16dp">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/movieRecyclerView"
+            android:id="@+id/homeRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="8dp" />
@@ -35,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/empty_state"
+            android:text="@string/empty_home_state"
             android:textSize="18sp"
             android:visibility="gone" />
 

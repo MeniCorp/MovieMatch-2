@@ -2,8 +2,15 @@
 <resources>
     <string name="app_name">MovieMatch 2</string>
     <string name="empty_state">No movies available yet. Swipe to discover!</string>
+    <string name="empty_likes_state">No liked movies yet. Start swiping!</string>
+    <string name="title_home">Home</string>
+    <string name="empty_home_state">No movies available yet. Start swiping!</string>
     <string name="menu_likes">Likes</string>
+    <string name="menu_suggestions">Suggestions</string>
     <string name="menu_settings">Settings</string>
+    <string name="empty_suggestions_state">No suggestions available yet. Start swiping!</string>
+    <string name="title_suggestions">Suggestions</string>
     <string name="like">LIKE</string>
     <string name="dislike">NOPE</string>
+    <string name="title_likes">Likes</string>
 </resources>

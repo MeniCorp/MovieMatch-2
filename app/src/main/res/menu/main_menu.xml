@@ -6,6 +6,10 @@
         android:title="@string/menu_likes"
         android:icon="@android:drawable/ic_menu_save" />
     <item
+        android:id="@+id/action_suggestions"
+        android:title="@string/menu_suggestions"
+        android:icon="@android:drawable/ic_menu_recent_history" />
+    <item
         android:id="@+id/action_settings"
         android:title="@string/menu_settings"
         android:icon="@android:drawable/ic_menu_preferences" />
