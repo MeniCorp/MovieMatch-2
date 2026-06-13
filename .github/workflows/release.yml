@@ -33,29 +33,23 @@ jobs:
       version_code: ${{ steps.get-version.outputs.version_code }}
       tag_name: ${{ steps.get-version.outputs.tag_name }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Extract version from build.gradle.kts
-        id: get-version
+      - id: get-version
         run: |
           VERSION_NAME=$(grep -o 'versionName = "[^"]*"' app/build.gradle.kts | head -1 | sed 's/versionName = "\([^"]*\)"/\1/')
           VERSION_CODE=$(grep -o 'versionCode = [0-9]*' app/build.gradle.kts | head -1 | sed 's/versionCode = \([0-9]*\)/\1/')
-          
           if [ -n "${{ github.event.inputs.version_name }}" ]; then
             VERSION_NAME="${{ github.event.inputs.version_name }}"
           fi
-          
           if [ -n "${{ github.event.inputs.version_code }}" ]; then
             VERSION_CODE="${{ github.event.inputs.version_code }}"
           fi
-          
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             TAG_NAME="${{ github.ref_name }}"
           else
             TAG_NAME="v${VERSION_NAME}-${{ github.run_number }}-${{ github.sha }}"
           fi
-          
           echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
           echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
@@ -65,60 +59,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v3
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug
+      - run: ./gradlew assembleDebug
 
-      - name: Build release APK
-        run: ./gradlew assembleRelease
+      - run: ./gradlew assembleRelease
 
-      - name: Get checksums
-        id: checksums
+      - id: checksums
         run: |
           echo "debug_sha256=$(sha256sum app/build/outputs/apk/debug/app-debug.apk | cut -d' ' -f1)" >> $GITHUB_OUTPUT
           echo "release_sha256=$(sha256sum app/build/outputs/apk/release/app-release.apk | cut -d' ' -f1)" >> $GITHUB_OUTPUT
 
-      - name: Get commit history
-        id: commits
+      - id: commits
         run: |
           echo "commits<<EOF" >> $GITHUB_OUTPUT
           git log --oneline --no-merges -5 >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Generate release notes
-        id: release_notes
+      - id: release_notes
         run: |
-          VERSION_NAME="${{ needs.get-version.outputs.version_name }}"
-          VERSION_CODE="${{ needs.get-version.outputs.version_code }}"
-          SHA="${{ github.sha }}"
-          NOTES="Release $VERSION_NAME ($VERSION_CODE)
-
-Build: $SHA
-Trigger: ${{ github.event_name }}
-Branch: ${{ github.ref_name }}
-
-### Commit History
-${{ steps.commits.outputs.commits }}
-
-Checksums:
-- Debug APK: ${{ steps.checksums.outputs.debug_sha256 }}
-- Release APK: ${{ steps.checksums.outputs.release_sha256 }}"
-
-          if [ -n "${{ github.event.inputs.release_notes }}" ]; then
-            NOTES="${{ github.event.inputs.release_notes }}"
-          fi
-          
+          chmod +x scripts/generate-release-notes.sh
+          NOTES=$(scripts/generate-release-notes.sh \
+            "${{ needs.get-version.outputs.version_name }}" \
+            "${{ needs.get-version.outputs.version_code }}" \
+            "${{ github.sha }}" \
+            "${{ github.event_name }}" \
+            "${{ github.ref_name }}" \
+            "${{ steps.commits.outputs.commits }}" \
+            "${{ steps.checksums.outputs.debug_sha256 }}" \
+            "${{ steps.checksums.outputs.release_sha256 }}" \
+            "${{ github.event.inputs.release_notes }}")
           echo "notes<<EOF" >> $GITHUB_OUTPUT
           echo "$NOTES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -130,13 +109,11 @@ Checksums:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.get-version.outputs.tag_name }}
           name: ${{ needs.get-version.outputs.tag_name }} - ${{ env.APP_NAME }}
-          body: |
-            ${{ steps.release_notes.outputs.notes }}
+          body: ${{ steps.release_notes.outputs.notes }}
           files: |
             app/build/outputs/apk/debug/app-debug.apk
             app/build/outputs/apk/release/app-release.apk
