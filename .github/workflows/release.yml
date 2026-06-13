@@ -79,7 +79,12 @@ jobs:
       - id: checksums
         run: |
           echo "debug_sha256=$(sha256sum app/build/outputs/apk/debug/app-debug.apk | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
-          echo "release_sha256=$(sha256sum app/build/outputs/apk/release/app-release.apk | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          RELEASE_APK="app/build/outputs/apk/release/app-release-unsigned.apk"
+          if [ -f "$RELEASE_APK" ]; then
+            echo "release_sha256=$(sha256sum "$RELEASE_APK" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_sha256=n/a (no unsigned APK found)" >> "$GITHUB_OUTPUT"
+          fi
 
       - id: commits
         run: |
@@ -120,6 +125,6 @@ jobs:
           bodyFile: /tmp/release_body.md
           artifacts: |
             app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/apk/release/*.apk
           token: ${{ secrets.GITHUB_TOKEN }}
           omitBodyDuringUpdate: true
