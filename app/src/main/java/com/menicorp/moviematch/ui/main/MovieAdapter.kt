@@ -70,16 +70,25 @@ class MovieAdapter(
         return movie
     }
 
-    fun showSwipeIndicators(holder: RecyclerView.ViewHolder, dX: Float) {
-        val vh = holder as MovieViewHolder
-        if (dX > 0) {
-            vh.likeIndicator.visibility = View.VISIBLE
-            vh.likeIndicator.alpha = minOf(1f, dX / 200f)
-            vh.dislikeIndicator.visibility = View.GONE
-        } else if (dX < 0) {
-            vh.dislikeIndicator.visibility = View.VISIBLE
-            vh.dislikeIndicator.alpha = minOf(1f, -dX / 200f)
-            vh.likeIndicator.visibility = View.GONE
+    fun showSwipeIndicators(position: Int, progress: Float, recyclerView: RecyclerView? = null) {
+        if (position !in 0 until itemCount) return
+        recyclerView?.let { recycler ->
+            for (i in 0 until recycler.childCount) {
+                val child = recycler.getChildAt(i)
+                val vh = recycler.getChildViewHolder(child) as? MovieViewHolder
+                if (vh?.bindingAdapterPosition == position) {
+                    if (progress > 0) {
+                        vh.likeIndicator.visibility = View.VISIBLE
+                        vh.likeIndicator.alpha = Math.min(1f, progress)
+                        vh.dislikeIndicator.visibility = View.GONE
+                    } else if (progress < 0) {
+                        vh.dislikeIndicator.visibility = View.VISIBLE
+                        vh.dislikeIndicator.alpha = Math.min(1f, -progress)
+                        vh.likeIndicator.visibility = View.GONE
+                    }
+                    return
+                }
+            }
         }
     }
 
@@ -98,6 +107,10 @@ class MovieAdapter(
             .translationX(targetX)
             .alpha(0f)
             .setDuration(200)
+            .withEndAction {
+                vh.cardView.translationX = 0f
+                vh.cardView.alpha = 1f
+            }
             .start()
     }
 }

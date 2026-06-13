@@ -15,7 +15,6 @@ import com.menicorp.moviematch.ui.main.MovieAdapter
 import com.menicorp.moviematch.R
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 
 class MainActivity : AppCompatActivity() {
 
@@ -90,7 +89,7 @@ class MainActivity : AppCompatActivity() {
             ): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.adapterPosition
+                val position = viewHolder.bindingAdapterPosition
                 if (position == RecyclerView.NO_POSITION) return
 
                 val movie = adapter.getMovieAt(position)
@@ -118,7 +117,7 @@ class MainActivity : AppCompatActivity() {
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
                     viewHolder.itemView.findViewById<androidx.cardview.widget.CardView>(R.id.cardView)
                         .translationX = dX
-                    adapter.showSwipeIndicators(viewHolder, dX)
+                    adapter.showSwipeIndicators(viewHolder.bindingAdapterPosition, dX)
                 }
             }
 

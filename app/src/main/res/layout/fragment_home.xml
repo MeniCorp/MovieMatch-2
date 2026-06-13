@@ -23,11 +23,12 @@
         android:layout_height="match_parent"
         android:layout_marginTop="16dp">
 
-        <androidx.recyclerview.widget.RecyclerView
+        <com.menicorp.moviematch.ui.main.TinderStackRecyclerView
             android:id="@+id/homeRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="8dp" />
+            android:clipToPadding="false"
+            android:padding="16dp" />
 
         <TextView
             android:id="@+id/emptyStateText"

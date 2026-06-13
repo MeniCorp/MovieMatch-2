@@ -5,16 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.menicorp.moviematch.R
 import com.menicorp.moviematch.data.model.Movie
 import com.menicorp.moviematch.ui.main.MovieAdapter
-import androidx.recyclerview.widget.RecyclerView
+import com.menicorp.moviematch.ui.main.TinderStackRecyclerView
 import android.widget.TextView
 
 class HomeFragment : Fragment() {
 
-    private lateinit var homeRecyclerView: RecyclerView
+    private lateinit var homeRecyclerView: TinderStackRecyclerView
     private lateinit var emptyStateText: TextView
     private lateinit var adapter: MovieAdapter
 
@@ -32,22 +31,41 @@ class HomeFragment : Fragment() {
 
         adapter = MovieAdapter(movies, ::onLike, ::onDislike)
         
-        homeRecyclerView.layoutManager = LinearLayoutManager(context)
         homeRecyclerView.adapter = adapter
+
+        setupSwipeListener()
 
         updateEmptyState()
 
         return view
     }
 
-    private fun onLike(movie: Movie) {
+    private fun setupSwipeListener() {
+        homeRecyclerView.setOnSwipeListener(object : TinderStackRecyclerView.OnSwipeListener {
+            override fun onLiked(position: Int) {
+                onLike(adapter.getMovieAt(position))
+            }
+
+            override fun onDisliked(position: Int) {
+                onDislike(adapter.getMovieAt(position))
+            }
+
+            override fun onSwipeProgress(position: Int, progress: Float) {
+                if (adapter.itemCount > 0) {
+                    adapter.showSwipeIndicators(position, progress, homeRecyclerView)
+                }
+            }
+        })
+    }
+
+    private fun onLike(_movie: Movie) {
         // Handle like action - add to liked movies
     }
 
-    private fun onDislike(movie: Movie) {
+    private fun onDislike(_movie: Movie) {
         // Remove from home when disliked
-        movies.remove(movie)
-        adapter.notifyDataSetChanged()
+        movies.remove(_movie)
+        adapter.updateMovies(movies)
         updateEmptyState()
     }
 
@@ -58,7 +76,7 @@ class HomeFragment : Fragment() {
     fun setMovies(movies: List<Movie>) {
         this.movies.clear()
         this.movies.addAll(movies)
-        adapter.notifyDataSetChanged()
+        adapter.updateMovies(movies)
         updateEmptyState()
     }
 
