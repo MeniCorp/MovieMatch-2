@@ -92,10 +92,13 @@ jobs:
               echo "$apk" >> "$GITHUB_OUTPUT"
               echo "EOF" >> "$GITHUB_OUTPUT"
             done < /tmp/release_apks.txt
+            echo "Found release APK: $apk"
+          else
+            echo "No release APK found after build"
           fi
           echo "Debug APK: app/build/outputs/apk/debug/app-debug.apk"
-          echo "Release APKs found:"
-          cat /tmp/release_apks.txt || echo "None"
+          echo "All APKs found:"
+          find app/build/outputs/apk -name "*.apk" 2>/dev/null || echo "None"
 
       - id: checksums
         run: |
