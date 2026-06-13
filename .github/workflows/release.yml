@@ -143,13 +143,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: "${{ needs.get-version.outputs.tag_name }}"
-          name: "${{ needs.get-version.outputs.tag_name }} - ${{ env.APP_NAME }}"
-          bodyFile: /tmp/release_body.md
-          artifacts: |
-            app/build/outputs/apk/debug/app-debug.apk
-            ${{ steps.find-release-apk.outputs.release_apk }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          omitBodyDuringUpdate: true
+        run: |
+          # Create release body with assets listing
+          # First verify APKs exist
+          if [ ! -f app/build/outputs/apk/debug/app-debug.apk ]; then
+            echo "ERROR: Debug APK not found!" >&2
+            exit 1
+          fi
+          # Create release
+          gh release create "${{ needs.get-version.outputs.tag_name }}" \
+            --title "${{ needs.get-version.outputs.tag_name }} - ${{ env.APP_NAME }}" \
+            --notes-file /tmp/release_body.md
+          # Upload debug APK
+          gh release upload "${{ needs.get-version.outputs.tag_name }}" app/build/outputs/apk/debug/app-debug.apk --clobber
+          # Upload release APK if it exists
+          if [ -n "${{ steps.find-release-apk.outputs.release_apk }}" ] && [ -f "${{ steps.find-release-apk.outputs.release_apk }}" ]; then
+            gh release upload "${{ needs.get-version.outputs.tag_name }}" "${{ steps.find-release-apk.outputs.release_apk }}" --clobber
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
