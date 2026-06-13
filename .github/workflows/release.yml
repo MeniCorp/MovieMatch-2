@@ -76,6 +76,13 @@ jobs:
 
       - run: ./gradlew assembleRelease
 
+      - id: list-apks
+        run: |
+          echo "Debug APKs:"
+          find app/build/outputs/apk/debug -name "*.apk" 2>/dev/null || echo "None"
+          echo "Release APKs:"
+          find app/build/outputs/apk/release -name "*.apk" 2>/dev/null || echo "None"
+
       - id: find-release-apk
         run: |
           find app/build/outputs/apk/release -name "*.apk" > /tmp/release_apks.txt 2>/dev/null || true
@@ -138,6 +145,8 @@ jobs:
           tag: "${{ needs.get-version.outputs.tag_name }}"
           name: "${{ needs.get-version.outputs.tag_name }} - ${{ env.APP_NAME }}"
           bodyFile: /tmp/release_body.md
-          artifacts: "${{ steps.find-release-apk.outputs.release_apk_paths }}"
+          artifacts: |
+            app/build/outputs/apk/debug/app-debug.apk
+            ${{ steps.find-release-apk.outputs.release_apk }}
           token: ${{ secrets.GITHUB_TOKEN }}
           omitBodyDuringUpdate: true
